@@ -1,29 +1,41 @@
 %{
 #include <stdio.h>
+#include <stdlib.h>
+#include "ast_defs.h"
+#include "calculator.tab.h"
+#include "lex.yy.h"
 %}
 
-%token NUMBER
-%token ADD SUB MUL DIV ABS
+%token <d> NUMBER
 %token EOL
+
+%type <a> exp factor term
 %%
 
-calclist:
-        | calclist exp EOL { printf("=%d\n", $2); }
+calclist:    
+        |   calclist exp EOL
+            {
+                printf("=%4.4g\n",eval($2));
+                freetree($2);
+                printf("> ");
+            }
         | calclist EOL { printf("> "); }
         ;
 
 exp: factor
-   | exp ADD factor { $$ = $1 + $3; }
-   | exp SUB factor { $$ = $1 - $3; }
+   | exp '+' factor { $$ = newast('+', $1, $3); }
+   | exp '-' factor { $$ = newast('-', $1, $3); }
    ;
 
 factor: term
-      | factor MUL term { $$ = $1 * $3; }
-      | factor DIV term { $$ = $1 / $3; } 
+      | factor '*' term { $$ = newast('*', $1, $3); }
+      | factor '/' term { $$ = newast('/', $1, $3); } 
       ;
 
-term: NUMBER
-    | ABS term { $$ = $2 >= 0 ? $2 : -$2; }
+term: NUMBER { $$ = newnum($1); }
+    | '|' term { $$ = newast('|', $2, NULL); }
+    | '(' exp ')' { $$ = $2; }
+    | '-' term { $$ = newast('M', $2, NULL); }
     ;
 
 %% 
@@ -38,5 +50,4 @@ void yyerror(char *msg)
 {
     fprintf(stderr, "error on line %d of file %s in functions __FUNCTION__\nerror message: %s\n", __LINE__, __FILE__, __FUNCTION__, msg);
 }
-
 
