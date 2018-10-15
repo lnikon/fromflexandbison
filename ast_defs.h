@@ -118,7 +118,7 @@ struct ast* newflow(int nodetype, struct ast *cond, struct ast *tl,
                     struct ast *tr);
 
 /* define function */
-void dodef(struct symbol *name, struct symlist *syms, struct ast *stmts);
+void dodef(struct symbol *name, struct symlist *syms, struct ast *func);
 
 static double callbuiltin(struct fncall *);
 static double calluser(struct ufncall *);
